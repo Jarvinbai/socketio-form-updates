@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Form Updates</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <form id="form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email"><br><br>
+        <label for="address">Address:</label>
+        <textarea id="address" name="address"></textarea><br><br>
+    </form>
+
+    <h2>Live Updates:</h2>
+    <p id="liveName">Name: </p>
+    <p id="liveEmail">Email: </p>
+    <p id="liveAddress">Address: </p>
+
+    <script>
+        const socket = io();
+
+        const formElements = document.querySelectorAll('#form input, #form textarea');
+
+        formElements.forEach(element => {
+            element.addEventListener('input', () => {
+                const data = {
+                    id: element.id,
+                    value: element.value
+                };
+                socket.emit('input_event', data);
+            });
+        });
+
+        socket.on('update_input', (data) => {
+            document.getElementById(`live${capitalizeFirstLetter(data.id)}`).innerText = `${capitalizeFirstLetter(data.id)}: ${data.value}`;
+            document.getElementById(data.id).value = data.value; // Update input value
+        });
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+    </script>
+</body>
+</html>
